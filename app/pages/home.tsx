@@ -18,16 +18,10 @@ export default function Home() {
     const [text, setText] = useState('')
     const [isListening, setIsListening] = useState(false)
     const [hasVoiceSupport, setHasVoiceSupport] = useState(false)
+    const [recognition, setRecognition] = useState(null)
     const [products, setProducts] = useState({
         products: []
     })
-
-    // Check if browser has voice support
-    useEffect(() => {
-        if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-            setHasVoiceSupport(true)
-        }
-    }, [])
 
     const searchInProducts = () => {
         setProducts({
@@ -45,30 +39,11 @@ export default function Home() {
     const GetSpeech = () => {
         if (firstRender) setFirstRender(false)
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-
-        const recognition = new SpeechRecognition()
-        recognition.lang = 'pt-BR'
-
-        recognition.onstart = () => {
-            setIsListening(true)
-        }
-
-        recognition.onspeechend = () => {
-            recognition.stop()
-            setIsListening(false)
-        }
-
-        recognition.onresult = (result) => {
-            const transcript = result.results[0][0].transcript
-            setText(transcript)
-            inputRef.current.value = transcript
-        }
-
         recognition.start()
     }
 
     const stopSpeech = () => {
+        recognition.stop()
         setIsListening(false)
     }
 
@@ -79,9 +54,50 @@ export default function Home() {
         setText(value)
     }
 
+    // Search in products when text changes
     useEffect(() => {
         searchInProducts()
     }, [text])
+
+    // Check if browser has voice support
+    useEffect(() => {
+        if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+            setHasVoiceSupport(true)
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+            const recognition = new SpeechRecognition()
+            recognition.lang = 'pt-BR'
+
+            recognition.maxAlternatives = 1
+            recognition.continuous = false
+
+            recognition.onstart = () => {
+                setIsListening(true)
+            }
+
+            recognition.onspeechend = () => {
+                recognition.stop()
+                stopSpeech()
+            }
+
+            recognition.onresult = (result) => {
+                const transcript = result.results[0][0].transcript
+                setText(transcript)
+                inputRef.current.value = transcript
+            }
+
+            recognition.onerror = (e) => {
+                stopSpeech()
+            }
+
+            recognition.onabort = () => {
+                stopSpeech()
+            }
+
+            setRecognition(recognition)
+        }
+    }, [])
 
     return (
         <div>
@@ -90,7 +106,6 @@ export default function Home() {
                     type="search"
                     placeholder="Pesquise Aqui..."
                     onChange={handleSearch}
-                    onSearch={handleSearch}
                     ref={inputRef}
                 />
                 {hasVoiceSupport && <VoiceButton onClick={GetSpeech}>🎤</VoiceButton>}
