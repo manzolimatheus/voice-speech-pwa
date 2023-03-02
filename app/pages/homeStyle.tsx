@@ -110,3 +110,11 @@ export const Badge = styled('span')`
     border-radius: 0.5rem;
     font-size: 0.8rem;
 `
+
+export const StopButton = styled('button')`
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    outline: none;
+    cursor: pointer;
+`

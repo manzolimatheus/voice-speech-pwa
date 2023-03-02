@@ -8,7 +8,8 @@ import {
     Badge,
     Iframe,
     ProductList,
-    ProductTile
+    ProductTile,
+    StopButton
 } from './homeStyle'
 
 export default function Home() {
@@ -67,6 +68,10 @@ export default function Home() {
         recognition.start()
     }
 
+    const stopSpeech = () => {
+        setIsListening(false)
+    }
+
     const handleSearch = (e) => {
         if (firstRender) setFirstRender(false)
         const {value} = e.target
@@ -93,6 +98,7 @@ export default function Home() {
             {isListening && (
                 <ListeningContainer>
                     <PulseText>{isListening ? '🎤 Ouvindo sua linda voz...' : null}</PulseText>
+                    <StopButton onClick={stopSpeech}>🛑 Cancelar</StopButton>
                 </ListeningContainer>
             )}
             {firstRender && (
